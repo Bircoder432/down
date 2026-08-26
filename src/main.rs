@@ -5,6 +5,7 @@ use tokio::fs;
 use trauma::{download::Download, downloader::Downloader};
 
 #[derive(Parser, Clone, Debug)]
+#[command(about = "A simple cli downloader")]
 struct Args {
     links: Vec<String>,
     #[arg(short = 'c', long)]
