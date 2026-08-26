@@ -1,6 +1,6 @@
 use std::{env, process::exit};
 
-use clap::Parser;
+use clap::{CommandFactory, Parser};
 use tokio::fs;
 use trauma::{download::Download, downloader::Downloader};
 
@@ -35,10 +35,12 @@ async fn main() {
     }
     let has_filenames = filenames.len() != 0;
     if links.is_empty() {
+        Args::command().print_help().unwrap();
         eprintln!("there must be more than 0 links");
         exit(1);
     }
     if has_filenames && filenames.len() != links.len() {
+        Args::command().print_help().unwrap();
         println!("There should be as many filenames as there are links, or 0");
         exit(2);
     }
