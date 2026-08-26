@@ -7,6 +7,8 @@ use trauma::{download::Download, downloader::Downloader};
 #[derive(Parser, Clone, Debug)]
 struct Args {
     links: Vec<String>,
+    #[arg(short = 'c', long)]
+    concurrents: Option<usize>,
     #[arg(short = 'F', long)]
     downloads_file: Option<String>,
     #[arg(short = 'o', long)]
@@ -26,7 +28,7 @@ async fn main() {
             .unwrap(),
     );
     let mut filenames = args.file_names;
-
+    let concurents = args.concurrents.unwrap_or(1);
     if let Some(file) = args.downloads_file {
         let content = fs::read_to_string(file).await.unwrap();
 
@@ -73,6 +75,9 @@ async fn main() {
             );
         }
     }
-    let downloader = Downloader::builder().directory(output).build();
+    let downloader = Downloader::builder()
+        .directory(output)
+        .concurrent_downloads(concurents)
+        .build();
     downloader.download(&downloads).await;
 }
