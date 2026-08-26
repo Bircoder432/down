@@ -30,25 +30,7 @@ async fn main() {
     let mut filenames = args.file_names;
     let concurents = args.concurrents.unwrap_or(1);
     if let Some(file) = args.downloads_file {
-        let content = fs::read_to_string(file).await.unwrap();
-
-        let lines: Vec<&str> = content.split("\n").collect();
-        for line in lines {
-            let parts: Vec<&str> = line.split(" ").collect();
-            if parts.len() == 0 {
-                continue;
-            }
-            if parts.len() == 1 {
-                if parts[0] == "" {
-                    continue;
-                }
-                links.push(parts[0].trim().to_string());
-            }
-            if parts.len() == 2 {
-                links.push(parts[0].trim().to_string());
-                filenames.push(parts[1].trim().to_string());
-            }
-        }
+        parse_file(&file, &mut links, &mut filenames).await;
     }
     let has_filenames = filenames.len() != 0;
     if links.is_empty() {
@@ -80,4 +62,27 @@ async fn main() {
         .concurrent_downloads(concurents)
         .build();
     downloader.download(&downloads).await;
+}
+
+async fn parse_file(path: &str, links: &mut Vec<String>, filenames: &mut Vec<String>) {
+    let content = fs::read_to_string(path).await.unwrap();
+
+    let lines: Vec<&str> = content.split("\n").collect();
+    for line in lines {
+        let mut parts: Vec<&str> = line.split(" ").collect();
+        parts = parts
+            .iter()
+            .filter_map(|p| if *p == "" { None } else { Some(*p) })
+            .collect();
+        if parts.len() == 0 {
+            continue;
+        }
+        if parts.len() == 1 {
+            links.push(parts[0].trim().to_string());
+        }
+        if parts.len() == 2 {
+            links.push(parts[0].trim().to_string());
+            filenames.push(parts[1].trim().to_string());
+        }
+    }
 }
