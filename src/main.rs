@@ -1,7 +1,9 @@
 mod cli;
+mod config;
 mod downloader;
 mod parser;
 
+use std::path::PathBuf;
 use std::process::exit;
 
 use clap::{CommandFactory, Parser};
@@ -11,11 +13,26 @@ use cli::Args;
 #[tokio::main]
 async fn main() {
     let args = Args::parse();
+
+    let config_path = dirs::config_dir()
+        .map(|p| p.join("down").join("config.toml"))
+        .unwrap_or_else(|| PathBuf::from("config.toml"));
+
+    let config = config::Config::load(&config_path).await.unwrap_or_default();
+
+    let dl_config = config.downloader.unwrap_or_default();
+    let msg_config = config.messages;
+
     let mut links = args.links;
     let mut filenames = args.file_names;
-    let concurrents = args.concurrents;
+
+    let concurrents = args
+        .concurrents
+        .or(dl_config.concurrent_downloads)
+        .unwrap_or(1);
+
     let output = match args.output_dir {
-        Some(dir) => std::path::PathBuf::from(dir),
+        Some(dir) => PathBuf::from(dir),
         None => std::env::current_dir().unwrap_or_default(),
     };
 
@@ -37,5 +54,5 @@ async fn main() {
         exit(2);
     }
 
-    downloader::run_downloads(links, filenames, output, concurrents).await;
+    downloader::run_downloads(links, filenames, output, concurrents, dl_config, msg_config).await;
 }

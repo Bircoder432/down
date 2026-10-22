@@ -1,0 +1,20 @@
+[downloader]
+concurrent_downloads = 3
+retries = 3
+resumable = true
+
+[downloader.headers]
+User-Agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
+Accept = "*/*"
+
+[downloader.progress_bar]
+hidden = false
+template = "{elapsed} {bar:40.cyan} {pos}/{len}"
+progress_chars = "▰▰▱"
+clear_on_finish = false
+
+[messages]
+success = "Done: {url}"
+error = "Failed: {url} -> {error}"
+skipped = "Skipped: {url} ({reason})"
+not_started = "Not started: {url}"
